@@ -1,0 +1,164 @@
+-- MySQL dump 10.13  Distrib 8.0.46, for Win64 (x86_64)
+--
+-- Host: localhost    Database: parking_system
+-- ------------------------------------------------------
+-- Server version	8.0.46
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!50503 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `app_settings`
+--
+
+DROP TABLE IF EXISTS `app_settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `app_settings` (
+  `key` varchar(64) NOT NULL,
+  `value` varchar(500) NOT NULL DEFAULT '',
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `app_settings`
+--
+
+LOCK TABLES `app_settings` WRITE;
+/*!40000 ALTER TABLE `app_settings` DISABLE KEYS */;
+INSERT INTO `app_settings` VALUES ('cooldown_minutes','30','2026-05-14 14:48:40'),('esp32_stream_url','http://192.168.1.9:81/stream','2026-05-23 09:11:53'),('telegram_bot_token','8609336430:AAGyHbeBj5w8xf7SnboRee62e5UeA_2RxR0','2026-05-14 14:48:40'),('telegram_chat_id','1178498360','2026-05-14 14:48:40');
+/*!40000 ALTER TABLE `app_settings` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `authorized_vehicles`
+--
+
+DROP TABLE IF EXISTS `authorized_vehicles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `authorized_vehicles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `plate_number` varchar(20) DEFAULT NULL,
+  `owner_name` varchar(100) DEFAULT NULL,
+  `vehicle_type` varchar(50) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `notes` varchar(255) DEFAULT NULL,
+  `added_by` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `plate_number` (`plate_number`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `authorized_vehicles`
+--
+
+LOCK TABLES `authorized_vehicles` WRITE;
+/*!40000 ALTER TABLE `authorized_vehicles` DISABLE KEYS */;
+INSERT INTO `authorized_vehicles` VALUES (5,'N 222211','Aya','Sedan','2026-05-19 09:32:35',NULL,'admin');
+/*!40000 ALTER TABLE `authorized_vehicles` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `detections`
+--
+
+DROP TABLE IF EXISTS `detections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `detections` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `plate_number` varchar(20) DEFAULT NULL,
+  `status` varchar(20) DEFAULT NULL,
+  `image_path` text,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `confidence` float DEFAULT '0',
+  `alert_sent` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=348 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `detections`
+--
+
+LOCK TABLES `detections` WRITE;
+/*!40000 ALTER TABLE `detections` DISABLE KEYS */;
+INSERT INTO `detections` VALUES (4,'ABC123','AUTHORIZED',NULL,'2026-05-05 08:59:07',0,0),(115,'N 22221','UNKNOWN','/images/car_1778767762.jpg','2026-05-14 14:09:23',92.0993,0),(121,'N 22221','UNKNOWN','/images/car_1778768367.jpg','2026-05-14 14:19:38',92.2345,0),(122,'N 222211','UNKNOWN','/images/car_1778768384.jpg','2026-05-14 14:19:46',93.7933,0),(123,'N 222211','UNKNOWN','/images/car_1778768391.jpg','2026-05-14 14:19:53',89.1897,0),(124,'N 22221','UNKNOWN','/images/car_1778768398.jpg','2026-05-14 14:20:00',89.8077,0),(125,'N 22221','UNKNOWN','/images/car_1778768405.jpg','2026-05-14 14:20:07',91.9245,0),(126,'N 222211','UNKNOWN','/images/car_1778768413.jpg','2026-05-14 14:20:14',90.6054,0),(127,'N 22221','UNKNOWN','/images/car_1778768420.jpg','2026-05-14 14:20:23',92.9596,0),(140,'N 222211','UNKNOWN','/images/car_1778772006.jpg','2026-05-14 15:20:08',86.5653,0),(144,'UNKNOWN','UNKNOWN','/images/car_1779454020.jpg','2026-05-22 12:47:00',0,0),(145,'UNKNOWN','UNKNOWN','/images/car_1779454048.jpg','2026-05-22 12:47:28',0,0),(146,'UNKNOWN','UNKNOWN','/images/car_1779454097.jpg','2026-05-22 12:48:17',0,0),(147,'UNKNOWN','UNKNOWN','/images/car_1779454106.jpg','2026-05-22 12:48:26',0,0),(148,'UNKNOWN','UNKNOWN','/images/car_1779454135.jpg','2026-05-22 12:48:55',0,0),(149,'UNKNOWN','UNKNOWN','/images/car_1779454148.jpg','2026-05-22 12:49:15',0,0),(150,'UNKNOWN','UNKNOWN','/images/car_1779454158.jpg','2026-05-22 12:49:19',0,0),(151,'UNKNOWN','UNKNOWN','/images/car_1779454202.jpg','2026-05-22 12:50:02',91,0),(152,'UNKNOWN','UNKNOWN','/images/car_1779454208.jpg','2026-05-22 12:50:08',0,0),(153,'UNKNOWN','UNKNOWN','/images/car_1779454214.jpg','2026-05-22 12:50:14',0,0),(154,'UNKNOWN','UNKNOWN','/images/car_1779454221.jpg','2026-05-22 12:50:22',0,0),(155,'UNKNOWN','UNKNOWN','/images/car_1779454231.jpg','2026-05-22 12:50:32',0,0),(156,'UNKNOWN','UNKNOWN','/images/car_1779454246.jpg','2026-05-22 12:50:48',0,0),(157,'UNKNOWN','UNKNOWN','/images/car_1779454253.jpg','2026-05-22 12:50:54',92.7123,0),(158,'UNKNOWN','UNKNOWN','/images/car_1779454260.jpg','2026-05-22 12:51:01',0,0),(159,'UNKNOWN','UNKNOWN','/images/car_1779454266.jpg','2026-05-22 12:51:08',0,0),(160,'N 222211','AUTHORIZED','/images/car_1779454273.jpg','2026-05-22 12:51:14',90.0738,0),(161,'UNKNOWN','UNKNOWN','/images/car_1779454279.jpg','2026-05-22 12:51:20',0,0),(162,'UNKNOWN','UNKNOWN','/images/car_1779454286.jpg','2026-05-22 12:51:26',0,0),(163,'UNKNOWN','UNKNOWN','/images/car_1779454300.jpg','2026-05-22 12:51:40',0,0),(164,'UNKNOWN','UNKNOWN','/images/car_1779454307.jpg','2026-05-22 12:51:48',0,0),(165,'UNKNOWN','UNKNOWN','/images/car_1779454351.jpg','2026-05-22 12:52:32',0,0),(166,'UNKNOWN','UNKNOWN','/images/car_1779454361.jpg','2026-05-22 12:52:43',0,0),(167,'UNKNOWN','UNKNOWN','/images/car_1779454368.jpg','2026-05-22 12:52:49',0,0),(168,'UNKNOWN','UNKNOWN','/images/car_1779454374.jpg','2026-05-22 12:52:55',0,0),(169,'UNKNOWN','UNKNOWN','/images/car_1779454380.jpg','2026-05-22 12:53:01',0,0),(170,'UNKNOWN','UNKNOWN','/images/car_1779454386.jpg','2026-05-22 12:53:06',0,0),(171,'UNKNOWN','UNKNOWN','/images/car_1779454392.jpg','2026-05-22 12:53:12',0,0),(172,'UNKNOWN','UNKNOWN','/images/car_1779454398.jpg','2026-05-22 12:53:19',0,0),(173,'UNKNOWN','UNKNOWN','/images/car_1779454404.jpg','2026-05-22 12:53:25',0,0),(174,'UNKNOWN','UNKNOWN','/images/car_1779454428.jpg','2026-05-22 12:53:49',0,0),(175,'Y 19999','UNKNOWN','/images/car_1779454438.jpg','2026-05-22 12:53:59',85.2923,0),(176,'UNKNOWN','UNKNOWN','/images/car_1779454451.jpg','2026-05-22 12:54:12',0,0),(177,'UNKNOWN','UNKNOWN','/images/car_1779454593.jpg','2026-05-22 12:56:34',0,0),(178,'UNKNOWN','UNKNOWN','/images/car_1779454599.jpg','2026-05-22 12:56:40',0,0),(179,'UNKNOWN','UNKNOWN','/images/car_1779454610.jpg','2026-05-22 12:56:51',0,0),(180,'UNKNOWN','UNKNOWN','/images/car_1779454616.jpg','2026-05-22 12:56:57',0,0),(181,'UNKNOWN','UNKNOWN','/images/car_1779454710.jpg','2026-05-22 12:58:31',0,0),(182,'UNKNOWN','UNKNOWN','/images/car_1779454776.jpg','2026-05-22 12:59:37',0,0),(183,'UNKNOWN','UNKNOWN','/images/car_1779454788.jpg','2026-05-22 12:59:49',0,0),(184,'UNKNOWN','UNKNOWN','/images/car_1779454810.jpg','2026-05-22 13:00:11',0,0),(185,'UNKNOWN','UNKNOWN','/images/car_1779454824.jpg','2026-05-22 13:00:24',0,0),(186,'UNKNOWN','UNKNOWN','/images/car_1779454830.jpg','2026-05-22 13:00:31',0,0),(187,'UNKNOWN','UNKNOWN','/images/car_1779454839.jpg','2026-05-22 13:00:40',0,0),(188,'UNKNOWN','UNKNOWN','/images/car_1779454854.jpg','2026-05-22 13:00:55',0,0),(189,'UNKNOWN','UNKNOWN','/images/car_1779460005.jpg','2026-05-22 14:26:46',0,0),(190,'UNKNOWN','UNKNOWN','/images/car_1779460012.jpg','2026-05-22 14:26:53',0,0),(191,'UNKNOWN','UNKNOWN','/images/car_1779460180.jpg','2026-05-22 14:29:41',0,0),(192,'UNKNOWN','UNKNOWN','/images/car_1779460188.jpg','2026-05-22 14:29:48',0,0),(193,'UNKNOWN','UNKNOWN','/images/car_1779460196.jpg','2026-05-22 14:29:57',0,0),(194,'UNKNOWN','UNKNOWN','/images/car_1779460581.jpg','2026-05-22 14:36:22',0,0),(195,'UNKNOWN','UNKNOWN','/images/car_1779460587.jpg','2026-05-22 14:36:28',0,0),(196,'UNKNOWN','UNKNOWN','/images/car_1779460647.jpg','2026-05-22 14:37:28',0,0),(197,'UNKNOWN','UNKNOWN','/images/car_1779460671.jpg','2026-05-22 14:37:52',0,0),(198,'UNKNOWN','UNKNOWN','/images/car_1779460678.jpg','2026-05-22 14:37:58',0,0),(199,'UNKNOWN','UNKNOWN','/images/car_1779460684.jpg','2026-05-22 14:38:05',0,0),(200,'UNKNOWN','UNKNOWN','/images/car_1779460690.jpg','2026-05-22 14:38:10',0,0),(201,'UNKNOWN','UNKNOWN','/images/car_1779460696.jpg','2026-05-22 14:38:17',0,0),(202,'UNKNOWN','UNKNOWN','/images/car_1779460702.jpg','2026-05-22 14:38:23',0,0),(203,'UNKNOWN','UNKNOWN','/images/car_1779460734.jpg','2026-05-22 14:38:55',0,0),(204,'UNKNOWN','UNKNOWN','/images/car_1779461723.jpg','2026-05-22 14:55:24',0,0),(205,'UNKNOWN','UNKNOWN','/images/car_1779461729.jpg','2026-05-22 14:55:30',0,0),(206,'UNKNOWN','UNKNOWN','/images/car_1779461734.jpg','2026-05-22 14:55:35',0,0),(207,'UNKNOWN','UNKNOWN','/images/car_1779461748.jpg','2026-05-22 14:55:49',0,0),(208,'UNKNOWN','UNKNOWN','/images/car_1779461777.jpg','2026-05-22 14:56:18',0,0),(209,'UNKNOWN','UNKNOWN','/images/car_1779461793.jpg','2026-05-22 14:56:34',0,0),(210,'UNKNOWN','UNKNOWN','/images/car_1779461797.jpg','2026-05-22 14:56:38',80.4268,0),(211,'UNKNOWN','UNKNOWN','/images/car_1779461802.jpg','2026-05-22 14:56:43',80.3949,0),(212,'UNKNOWN','UNKNOWN','/images/car_1779461829.jpg','2026-05-22 14:57:10',0,0),(213,'UNKNOWN','UNKNOWN','/images/car_1779461834.jpg','2026-05-22 14:57:15',0,0),(214,'UNKNOWN','UNKNOWN','/images/car_1779461840.jpg','2026-05-22 14:57:21',0,0),(215,'UNKNOWN','UNKNOWN','/images/car_1779461846.jpg','2026-05-22 14:57:26',0,0),(216,'UNKNOWN','UNKNOWN','/images/car_1779461851.jpg','2026-05-22 14:57:32',0,0),(217,'UNKNOWN','UNKNOWN','/images/car_1779461856.jpg','2026-05-22 14:57:37',0,0),(218,'UNKNOWN','UNKNOWN','/images/car_1779461861.jpg','2026-05-22 14:57:42',0,0),(219,'UNKNOWN','UNKNOWN','/images/car_1779461866.jpg','2026-05-22 14:57:47',78.7907,0),(220,'UNKNOWN','UNKNOWN','/images/car_1779462273.jpg','2026-05-22 15:04:34',0,0),(221,'UNKNOWN','UNKNOWN','/images/car_1779462278.jpg','2026-05-22 15:04:38',0,0),(222,'UNKNOWN','UNKNOWN','/images/car_1779462305.jpg','2026-05-22 15:05:06',0,0),(223,'N 2222','UNKNOWN','/images/car_1779462310.jpg','2026-05-22 15:05:11',89.8755,0),(224,'UNKNOWN','UNKNOWN','/images/car_1779462316.jpg','2026-05-22 15:05:17',0,0),(225,'UNKNOWN','UNKNOWN','/images/car_1779462321.jpg','2026-05-22 15:05:22',0,0),(226,'UNKNOWN','UNKNOWN','/images/car_1779462328.jpg','2026-05-22 15:05:28',0,0),(227,'UNKNOWN','UNKNOWN','/images/car_1779462374.jpg','2026-05-22 15:06:16',0,0),(228,'UNKNOWN','UNKNOWN','/images/car_1779462380.jpg','2026-05-22 15:06:20',0,0),(229,'UNKNOWN','UNKNOWN','/images/car_1779462385.jpg','2026-05-22 15:06:26',0,0),(230,'UNKNOWN','UNKNOWN','/images/car_1779462390.jpg','2026-05-22 15:06:31',0,0),(231,'UNKNOWN','UNKNOWN','/images/car_1779462399.jpg','2026-05-22 15:06:40',0,0),(232,'UNKNOWN','UNKNOWN','/images/car_1779462405.jpg','2026-05-22 15:06:46',0,0),(233,'UNKNOWN','UNKNOWN','/images/car_1779462415.jpg','2026-05-22 15:06:56',0,0),(234,'UNKNOWN','UNKNOWN','/images/car_1779462424.jpg','2026-05-22 15:07:05',0,0),(235,'N 22221','UNKNOWN','/images/car_1779462429.jpg','2026-05-22 15:07:09',93.4017,0),(236,'UNKNOWN','UNKNOWN','/images/car_1779462475.jpg','2026-05-22 15:07:56',0,0),(237,'UNKNOWN','UNKNOWN','/images/car_1779462480.jpg','2026-05-22 15:08:01',0,0),(238,'N 222211','AUTHORIZED','/images/car_1779462486.jpg','2026-05-22 15:08:07',89.2775,0),(239,'UNKNOWN','UNKNOWN','/images/car_1779462491.jpg','2026-05-22 15:08:12',0,0),(240,'N 2222','UNKNOWN','/images/car_1779462496.jpg','2026-05-22 15:08:17',92.4778,0),(241,'UNKNOWN','UNKNOWN','/images/car_1779462507.jpg','2026-05-22 15:08:28',0,0),(242,'UNKNOWN','UNKNOWN','/images/car_1779462578.jpg','2026-05-22 15:09:39',0,0),(243,'UNKNOWN','UNKNOWN','/images/car_1779462587.jpg','2026-05-22 15:09:48',0,0),(244,'UNKNOWN','UNKNOWN','/images/car_1779462592.jpg','2026-05-22 15:09:53',0,0),(245,'UNKNOWN','UNKNOWN','/images/car_1779462598.jpg','2026-05-22 15:09:58',0,0),(246,'UNKNOWN','UNKNOWN','/images/car_1779462603.jpg','2026-05-22 15:10:03',0,0),(247,'UNKNOWN','UNKNOWN','/images/car_1779462608.jpg','2026-05-22 15:10:09',0,0),(248,'UNKNOWN','UNKNOWN','/images/car_1779462617.jpg','2026-05-22 15:10:18',0,0),(249,'UNKNOWN','UNKNOWN','/images/car_1779462623.jpg','2026-05-22 15:10:24',0,0),(250,'UNKNOWN','UNKNOWN','/images/car_1779462628.jpg','2026-05-22 15:10:29',0,0),(251,'UNKNOWN','UNKNOWN','/images/car_1779462716.jpg','2026-05-22 15:11:57',0,0),(252,'UNKNOWN','UNKNOWN','/images/car_1779462721.jpg','2026-05-22 15:12:02',0,0),(253,'UNKNOWN','UNKNOWN','/images/car_1779462727.jpg','2026-05-22 15:12:07',0,0),(254,'UNKNOWN','UNKNOWN','/images/car_1779462734.jpg','2026-05-22 15:12:15',0,0),(255,'UNKNOWN','UNKNOWN','/images/car_1779462741.jpg','2026-05-22 15:12:22',0,0),(256,'UNKNOWN','UNKNOWN','/images/car_1779462746.jpg','2026-05-22 15:12:27',0,0),(257,'UNKNOWN','UNKNOWN','/images/car_1779462751.jpg','2026-05-22 15:12:32',0,0),(258,'UNKNOWN','UNKNOWN','/images/car_1779462757.jpg','2026-05-22 15:12:37',0,0),(259,'UNKNOWN','UNKNOWN','/images/car_1779462762.jpg','2026-05-22 15:12:43',0,0),(260,'UNKNOWN','UNKNOWN','/images/car_1779462767.jpg','2026-05-22 15:12:48',0,0),(261,'UNKNOWN','UNKNOWN','/images/car_1779462794.jpg','2026-05-22 15:13:16',0,0),(262,'UNKNOWN','UNKNOWN','/images/car_1779462802.jpg','2026-05-22 15:13:22',0,0),(263,'UNKNOWN','UNKNOWN','/images/car_1779462807.jpg','2026-05-22 15:13:28',0,0),(264,'UNKNOWN','UNKNOWN','/images/car_1779462819.jpg','2026-05-22 15:13:40',0,0),(265,'UNKNOWN','UNKNOWN','/images/car_1779462832.jpg','2026-05-22 15:13:53',0,0),(266,'UNKNOWN','UNKNOWN','/images/car_1779462841.jpg','2026-05-22 15:14:02',0,0),(267,'UNKNOWN','UNKNOWN','/images/car_1779462850.jpg','2026-05-22 15:14:11',0,0),(268,'UNKNOWN','UNKNOWN','/images/car_1779462856.jpg','2026-05-22 15:14:16',0,0),(269,'UNKNOWN','UNKNOWN','/images/car_1779462864.jpg','2026-05-22 15:14:24',0,0),(270,'UNKNOWN','UNKNOWN','/images/car_1779462869.jpg','2026-05-22 15:14:30',0,0),(271,'UNKNOWN','UNKNOWN','/images/car_1779462876.jpg','2026-05-22 15:14:37',0,0),(272,'UNKNOWN','UNKNOWN','/images/car_1779462882.jpg','2026-05-22 15:14:43',0,0),(273,'UNKNOWN','UNKNOWN','/images/car_1779462891.jpg','2026-05-22 15:14:52',0,0),(274,'UNKNOWN','UNKNOWN','/images/car_1779462897.jpg','2026-05-22 15:14:58',0,0),(275,'UNKNOWN','UNKNOWN','/images/car_1779462906.jpg','2026-05-22 15:15:07',0,0),(276,'UNKNOWN','UNKNOWN','/images/car_1779462945.jpg','2026-05-22 15:15:46',0,0),(277,'UNKNOWN','UNKNOWN','/images/car_1779463057.jpg','2026-05-22 15:17:37',0,0),(278,'UNKNOWN','UNKNOWN','/images/car_1779463109.jpg','2026-05-22 15:18:30',0,0),(279,'UNKNOWN','UNKNOWN','/images/car_1779463120.jpg','2026-05-22 15:18:41',0,0),(280,'UNKNOWN','UNKNOWN','/images/car_1779463126.jpg','2026-05-22 15:18:46',0,0),(281,'UNKNOWN','UNKNOWN','/images/car_1779463131.jpg','2026-05-22 15:18:52',0,0),(282,'UNKNOWN','UNKNOWN','/images/car_1779463140.jpg','2026-05-22 15:19:01',0,0),(283,'UNKNOWN','UNKNOWN','/images/car_1779463148.jpg','2026-05-22 15:19:09',0,0),(284,'UNKNOWN','UNKNOWN','/images/car_1779463154.jpg','2026-05-22 15:19:15',0,0),(285,'UNKNOWN','UNKNOWN','/images/car_1779463165.jpg','2026-05-22 15:19:26',0,0),(286,'UNKNOWN','UNKNOWN','/images/car_1779463482.jpg','2026-05-22 15:24:43',0,0),(287,'UNKNOWN','UNKNOWN','/images/car_1779463505.jpg','2026-05-22 15:25:06',0,0),(288,'UNKNOWN','UNKNOWN','/images/car_1779463580.jpg','2026-05-22 15:26:22',0,0),(289,'UNKNOWN','UNKNOWN','/images/car_1779463602.jpg','2026-05-22 15:26:44',0,0),(290,'UNKNOWN','UNKNOWN','/images/car_1779475353.jpg','2026-05-22 18:42:34',0,0),(291,'UNKNOWN','UNKNOWN','/images/car_1779475357.jpg','2026-05-22 18:42:38',0,0),(292,'UNKNOWN','UNKNOWN','/images/car_1779475362.jpg','2026-05-22 18:42:43',0,0),(293,'UNKNOWN','UNKNOWN','/images/car_1779475367.jpg','2026-05-22 18:42:48',91.9983,0),(294,'UNKNOWN','UNKNOWN','/images/car_1779475372.jpg','2026-05-22 18:42:53',0,0),(295,'UNKNOWN','UNKNOWN','/images/car_1779475378.jpg','2026-05-22 18:42:59',0,0),(296,'UNKNOWN','UNKNOWN','/images/car_1779475384.jpg','2026-05-22 18:43:05',0,0),(297,'UNKNOWN','UNKNOWN','/images/car_1779475390.jpg','2026-05-22 18:43:10',0,0),(298,'UNKNOWN','UNKNOWN','/images/car_1779475395.jpg','2026-05-22 18:43:15',93.5577,0),(299,'UNKNOWN','UNKNOWN','/images/car_1779475401.jpg','2026-05-22 18:43:22',0,0),(300,'UNKNOWN','UNKNOWN','/images/car_1779475406.jpg','2026-05-22 18:43:27',0,0),(301,'UNKNOWN','UNKNOWN','/images/car_1779475411.jpg','2026-05-22 18:43:32',0,0),(302,'UNKNOWN','UNKNOWN','/images/car_1779475416.jpg','2026-05-22 18:43:38',0,0),(303,'UNKNOWN','UNKNOWN','/images/car_1779475421.jpg','2026-05-22 18:43:42',91.2028,0),(304,'UNKNOWN','UNKNOWN','/images/car_1779475427.jpg','2026-05-22 18:43:47',0,0),(305,'UNKNOWN','UNKNOWN','/images/car_1779475432.jpg','2026-05-22 18:43:52',0,0),(306,'UNKNOWN','UNKNOWN','/images/car_1779475437.jpg','2026-05-22 18:43:58',0,0),(307,'UNKNOWN','UNKNOWN','/images/car_1779475442.jpg','2026-05-22 18:44:04',0,0),(308,'UNKNOWN','UNKNOWN','/images/car_1779475448.jpg','2026-05-22 18:44:08',90.8766,0),(309,'UNKNOWN','UNKNOWN','/images/car_1779475453.jpg','2026-05-22 18:44:14',0,0),(310,'UNKNOWN','UNKNOWN','/images/car_1779475458.jpg','2026-05-22 18:44:19',0,0),(311,'UNKNOWN','UNKNOWN','/images/car_1779475466.jpg','2026-05-22 18:44:27',0,0),(312,'UNKNOWN','UNKNOWN','/images/car_1779475472.jpg','2026-05-22 18:44:33',0,0),(313,'UNKNOWN','UNKNOWN','/images/car_1779475477.jpg','2026-05-22 18:44:38',0,0),(314,'UNKNOWN','UNKNOWN','/images/car_1779475483.jpg','2026-05-22 18:44:43',0,0),(315,'UNKNOWN','UNKNOWN','/images/car_1779475488.jpg','2026-05-22 18:44:49',0,0),(316,'UNKNOWN','UNKNOWN','/images/car_1779475520.jpg','2026-05-22 18:45:22',0,0),(317,'UNKNOWN','UNKNOWN','/images/car_1779475526.jpg','2026-05-22 18:45:27',81.9674,0),(318,'UNKNOWN','UNKNOWN','/images/car_1779475531.jpg','2026-05-22 18:45:32',0,0),(319,'UNKNOWN','UNKNOWN','/images/car_1779475536.jpg','2026-05-22 18:45:37',90.5683,0),(320,'UNKNOWN','UNKNOWN','/images/car_1779475541.jpg','2026-05-22 18:45:43',0,0),(321,'UNKNOWN','UNKNOWN','/images/car_1779475546.jpg','2026-05-22 18:45:47',92.955,0),(322,'UNKNOWN','UNKNOWN','/images/car_1779475551.jpg','2026-05-22 18:45:52',0,0),(323,'UNKNOWN','UNKNOWN','/images/car_1779475556.jpg','2026-05-22 18:45:58',0,0),(324,'UNKNOWN','UNKNOWN','/images/car_1779475561.jpg','2026-05-22 18:46:02',93.0584,0),(325,'UNKNOWN','UNKNOWN','/images/car_1779475566.jpg','2026-05-22 18:46:08',0,0),(326,'UNKNOWN','UNKNOWN','/images/car_1779475571.jpg','2026-05-22 18:46:12',93.2243,0),(327,'UNKNOWN','UNKNOWN','/images/car_1779475577.jpg','2026-05-22 18:46:18',0,0),(328,'UNKNOWN','UNKNOWN','/images/car_1779475582.jpg','2026-05-22 18:46:22',92.6985,0),(329,'UNKNOWN','UNKNOWN','/images/car_1779475587.jpg','2026-05-22 18:46:28',0,0),(330,'UNKNOWN','UNKNOWN','/images/car_1779475934.jpg','2026-05-22 18:52:15',0,0),(331,'UNKNOWN','UNKNOWN','/images/car_1779475939.jpg','2026-05-22 18:52:19',0,0),(332,'UNKNOWN','UNKNOWN','/images/car_1779475944.jpg','2026-05-22 18:52:25',0,0),(333,'UNKNOWN','UNKNOWN','/images/car_1779475949.jpg','2026-05-22 18:52:32',0,0),(334,'UNKNOWN','UNKNOWN','/images/car_1779475954.jpg','2026-05-22 18:52:35',0,0),(335,'N 222211','AUTHORIZED','/images/car_1779475959.jpg','2026-05-22 18:52:40',92.6834,0),(336,'UNKNOWN','UNKNOWN','/images/car_1779475964.jpg','2026-05-22 18:52:45',93.4752,0),(337,'N 222211','AUTHORIZED','/images/car_1779475969.jpg','2026-05-22 18:52:50',92.7817,0),(338,'UNKNOWN','UNKNOWN','/images/car_1779531084.jpg','2026-05-23 10:11:24',0,0),(339,'UNKNOWN','UNKNOWN','/images/car_1779531095.jpg','2026-05-23 10:11:35',0,0),(340,'UNKNOWN','UNKNOWN','/images/car_1779531155.jpg','2026-05-23 10:12:35',0,0),(341,'UNKNOWN','UNKNOWN','/images/car_1779531612.jpg','2026-05-23 10:20:13',0,0),(342,'UNKNOWN','UNKNOWN','/images/car_1779531790.jpg','2026-05-23 10:23:12',0,0),(343,'N 22221','UNKNOWN','/images/car_1779531810.jpg','2026-05-23 10:23:31',93.1631,0),(344,'N 22221','UNKNOWN','/images/car_1779531819.jpg','2026-05-23 10:23:39',91.7186,0),(345,'UNKNOWN','UNKNOWN','/images/car_1779531825.jpg','2026-05-23 10:23:46',0,0),(346,'N 222211','AUTHORIZED','/images/car_1779531832.jpg','2026-05-23 10:23:53',93.087,0),(347,'UNKNOWN','UNKNOWN','/images/car_1779531839.jpg','2026-05-23 10:24:00',0,0);
+/*!40000 ALTER TABLE `detections` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `users`
+--
+
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL,
+  `password_hash` varchar(64) NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `username` (`username`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `users`
+--
+
+LOCK TABLES `users` WRITE;
+/*!40000 ALTER TABLE `users` DISABLE KEYS */;
+INSERT INTO `users` VALUES (1,'admin','7c04837eb356565e28bb14e5a1dedb240a5ac2561f8ed318c54a279fb6a9665e','2026-05-12 08:01:11');
+/*!40000 ALTER TABLE `users` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `vehicles`
+--
+
+DROP TABLE IF EXISTS `vehicles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vehicles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `plate_number` varchar(20) DEFAULT NULL,
+  `owner_name` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `plate_number` (`plate_number`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `vehicles`
+--
+
+LOCK TABLES `vehicles` WRITE;
+/*!40000 ALTER TABLE `vehicles` DISABLE KEYS */;
+INSERT INTO `vehicles` VALUES (1,'ABC123','Aya');
+/*!40000 ALTER TABLE `vehicles` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2026-05-23 14:38:42
