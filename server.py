@@ -84,9 +84,9 @@ db_pool = mysql.connector.pooling.MySQLConnectionPool(
     pool_name="parking_pool",
     pool_size=5,
     host="localhost",
-    user="root",
-    password="12345",
-    database="parking_system"
+    user="arlpruser",
+    password="YourStrongPassword123!",
+    database="alpr_db"
 )
 
 def get_db():
