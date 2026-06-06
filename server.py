@@ -184,10 +184,10 @@ def send_telegram_alert(plate_number: str, confidence: float, filename: str):
 def camera_feed():
     stream_url = get_setting('esp32_stream_url') or ESP32_STREAM_URL
     try:
-        r = req_lib.get(stream_url, stream=True, timeout=10)
+        r = req_lib.get(stream_url, stream=True, timeout=(5, None))  # 5s connect, no read timeout
         return Response(
             r.iter_content(chunk_size=4096),
-            content_type=r.headers.get('Content-Type', 'multipart/x-mixed-replace')
+            content_type=r.headers.get('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
         )
     except Exception as e:
         return str(e), 502
