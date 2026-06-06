@@ -449,6 +449,38 @@ def get_stats():
     })
 
 
+@app.route('/api/stats/chart')
+@jwt_required()
+def get_stats_chart():
+    conn   = get_db()
+    cursor = conn.cursor(dictionary=True)
+    try:
+        cursor.execute("""
+            SELECT
+                DATE(created_at)                                      AS day,
+                SUM(status = 'AUTHORIZED')                            AS authorized,
+                SUM(status = 'UNKNOWN' AND plate_number != 'UNKNOWN') AS unknown
+            FROM detections
+            WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+              AND plate_number != 'UNKNOWN'
+            GROUP BY DATE(created_at)
+            ORDER BY day ASC
+        """)
+        rows = cursor.fetchall()
+    finally:
+        cursor.close()
+        conn.close()
+
+    result = []
+    for row in rows:
+        result.append({
+            "day":        row["day"].strftime("%a %d"),
+            "authorized": int(row["authorized"] or 0),
+            "unknown":    int(row["unknown"]    or 0),
+        })
+    return jsonify(result)
+
+
 # ========================
 # WHITELIST (VEHICLES)
 # ========================
