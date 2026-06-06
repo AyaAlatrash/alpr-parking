@@ -5,7 +5,7 @@
 #include "board_config.h"
 #include "ultrasonic.h"   // ← ultrasonic sensor
 
-const char* serverName = "http://192.168.1.100:5000/upload";
+const char* serverName = "http://209.74.89.108:5000/upload";
 
 const char* ssid     = "Mohsen malaknet05480305";
 const char* password = "alimadad12345";
