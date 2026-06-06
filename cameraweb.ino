@@ -1,39 +1,36 @@
 #include "esp_camera.h"
 #include <WiFi.h>
 #include <HTTPClient.h>
-#include "ultrasonic.h"
 
-const char* serverName = "http://209.74.89.108:5000/upload";
-
-// ===========================
-// Select camera model
-// ===========================
 #include "board_config.h"
+#include "ultrasonic.h"   // ← ultrasonic sensor
+
+const char* serverName = "http://192.168.1.100:5000/upload";
+
+const char* ssid     = "Mohsen malaknet05480305";
+const char* password = "alimadad12345";
 
 // ===========================
-// WiFi credentials
+// Motion detection settings
 // ===========================
-const char *ssid     = "Mohsen malaknet05480305";
-const char *password = "alimadad12345";
+const int WIDTH  = 240;
+const int HEIGHT = 240;
 
-void startCameraServer();
-void setupLedFlash();
-
-// ===========================
-// Timing config
-// ===========================
-const unsigned long DWELL_MS    = 1500;  // confirm car is stopped (not walking past)
-const unsigned long COOLDOWN_MS = 8000;  // min time between uploads
+const int MOTION_THRESHOLD        = 15;    // per-pixel difference
+const int CHANGED_PIXELS_THRESHOLD = 2000; // lowered from 4000 → easier trigger
 
 unsigned long lastUpload = 0;
+const unsigned long COOLDOWN_MS = 5000;   // 5 s between uploads
+
+uint8_t* previousFrame = NULL;
 
 // ===========================
 void setup() {
   Serial.begin(115200);
   Serial.setDebugOutput(true);
-  Serial.println();
+  Serial.println("\n\n=== ParkGuard ESP32-S3 starting ===");
 
-  // ── Camera config (original working settings) ──────
+  // ── Camera config ──────────────────────────────────────────
   camera_config_t config;
   config.ledc_channel = LEDC_CHANNEL_0;
   config.ledc_timer   = LEDC_TIMER_0;
@@ -53,147 +50,162 @@ void setup() {
   config.pin_sccb_scl = SIOC_GPIO_NUM;
   config.pin_pwdn     = PWDN_GPIO_NUM;
   config.pin_reset    = RESET_GPIO_NUM;
+
   config.xclk_freq_hz = 20000000;
-  config.frame_size   = FRAMESIZE_QVGA;
+  config.frame_size   = FRAMESIZE_240X240;
   config.pixel_format = PIXFORMAT_GRAYSCALE;
   config.grab_mode    = CAMERA_GRAB_WHEN_EMPTY;
-  config.fb_location  = CAMERA_FB_IN_PSRAM;
   config.jpeg_quality = 12;
   config.fb_count     = 1;
 
-  if (config.pixel_format == PIXFORMAT_JPEG) {
-    if (psramFound()) {
-      config.jpeg_quality = 10;
-      config.fb_count     = 2;
-      config.grab_mode    = CAMERA_GRAB_LATEST;
-    } else {
-      config.frame_size  = FRAMESIZE_SVGA;
-      config.fb_location = CAMERA_FB_IN_DRAM;
-    }
+  // Use PSRAM only if available — prevents brownout crashes
+  if (psramFound()) {
+    Serial.println("PSRAM found — using PSRAM frame buffer");
+    config.fb_location = CAMERA_FB_IN_PSRAM;
   } else {
-    config.frame_size = FRAMESIZE_240X240;
-#if CONFIG_IDF_TARGET_ESP32S3
-    config.fb_count = 2;
-#endif
+    Serial.println("No PSRAM — using DRAM frame buffer");
+    config.fb_location = CAMERA_FB_IN_DRAM;
+    config.frame_size  = FRAMESIZE_240X240; // keep small to fit in DRAM
   }
-
-#if defined(CAMERA_MODEL_ESP_EYE)
-  pinMode(13, INPUT_PULLUP);
-  pinMode(14, INPUT_PULLUP);
-#endif
 
   esp_err_t err = esp_camera_init(&config);
   if (err != ESP_OK) {
-    Serial.printf("Camera init failed with error 0x%x", err);
+    Serial.printf("Camera init failed: 0x%x — restarting in 3s\n", err);
+    delay(3000);
+    ESP.restart();
     return;
   }
+  Serial.println("Camera init OK");
 
-  sensor_t *s = esp_camera_sensor_get();
-  if (s->id.PID == OV3660_PID) {
-    s->set_vflip(s, 1);
-    s->set_brightness(s, 1);
-    s->set_saturation(s, -2);
-  }
-  if (config.pixel_format == PIXFORMAT_JPEG) {
-    s->set_framesize(s, FRAMESIZE_QVGA);
-  }
-
-#if defined(CAMERA_MODEL_M5STACK_WIDE) || defined(CAMERA_MODEL_M5STACK_ESP32CAM)
-  s->set_vflip(s, 1);
-  s->set_hmirror(s, 1);
-#endif
-
+  // Optional sensor tweaks for ESP32S3 Eye
 #if defined(CAMERA_MODEL_ESP32S3_EYE)
-  s->set_hmirror(s, 0); delay(200);
-  s->set_hmirror(s, 1); delay(200);
+  sensor_t* s = esp_camera_sensor_get();
+  s->set_hmirror(s, 1);
   s->set_vflip(s, 1);
 #endif
 
-#if defined(LED_GPIO_NUM)
-  setupLedFlash();
-#endif
-
+  // ── WiFi ────────────────────────────────────────────────────
   WiFi.begin(ssid, password);
   WiFi.setSleep(false);
 
-  Serial.print("WiFi connecting");
+  // Reduce TX power → lower current draw → fewer brownouts
+  WiFi.setTxPower(WIFI_POWER_11dBm);   // was 20 dBm by default
+
+  Serial.print("Connecting to WiFi");
+  int attempts = 0;
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
+    if (++attempts > 40) {
+      Serial.println("\nWiFi failed — restarting");
+      ESP.restart();
+    }
   }
-  Serial.println("");
-  Serial.println("WiFi connected");
+  Serial.println();
+  Serial.println("WiFi connected: " + WiFi.localIP().toString());
+  Serial.printf("RSSI: %d dBm\n", WiFi.RSSI());
 
-  startCameraServer();  // starts stream on port 81 and web UI on port 80
+  // Warm-up delay: let power settle before first capture
+  Serial.println("Warming up camera (2 s)...");
+  ultrasonicSetup();   // ← init ultrasonic
+  delay(2000);
 
-  Serial.print("Camera Ready! Use 'http://");
-  Serial.print(WiFi.localIP());
-  Serial.println("' to connect");
-
-  // Init ultrasonic AFTER camera server is running
-  ultrasonicSetup();
-
-  Serial.println("=== Ready — waiting for vehicles ===");
+  Serial.println("=== Ready — monitoring for motion + proximity ===");
 }
 
 // ===========================
 void loop() {
-
-  // ── Step 1: Distance check (primary trigger) ──────
+  // ── Check distance first (cheap, skips camera if no car nearby) ──
   long dist = getDistance();
   Serial.printf("Distance: %ld cm\n", dist);
 
-  if (dist > MAX_DISTANCE_CM) {
-    delay(200);
-    return;  // nothing nearby — skip everything
-  }
-
-  // ── Step 2: Dwell check — confirm car is stopped ──
-  Serial.println("Object detected — confirming...");
-  delay(DWELL_MS);
-
-  if (getDistance() > MAX_DISTANCE_CM) {
-    Serial.println("False trigger — ignoring");
-    delay(200);
-    return;
-  }
-
-  // ── Step 3: Cooldown check ────────────────────────
-  if (millis() - lastUpload < COOLDOWN_MS) {
-    Serial.println("Cooldown active — skipping");
-    delay(500);
-    return;
-  }
-
-  // ── Step 4: Capture & upload ─────────────────────
-  Serial.println(">>> Car confirmed — capturing...");
-
-  camera_fb_t *fb = esp_camera_fb_get();
-  if (!fb) {
-    Serial.println("Camera capture failed");
-    delay(500);
-    return;
-  }
-
-  if (WiFi.status() == WL_CONNECTED) {
-    HTTPClient http;
-    http.begin(serverName);
-    http.addHeader("Content-Type", "application/octet-stream");
-    http.setTimeout(10000);
-
-    int code = http.POST(fb->buf, fb->len);
-    Serial.printf("Server response: %d\n", code);
-    http.end();
-
-    if (code == 200) {
-      lastUpload = millis();
-      Serial.println("<<< Upload OK");
+  if (!carInRange()) {
+    // No car nearby — reset reference frame and skip
+    if (previousFrame != NULL) {
+      free(previousFrame);
+      previousFrame = NULL;
     }
-  } else {
-    Serial.println("WiFi lost — skipping upload");
-    WiFi.reconnect();
+    delay(200);
+    return;
   }
 
+  // ── Car is close — now run motion detection ──
+  camera_fb_t* fb = esp_camera_fb_get();
+
+  if (!fb) {
+    Serial.println("Camera capture failed — retrying in 500 ms");
+    delay(500);
+    return;
+  }
+
+  // Validate frame size matches expected 240×240
+  if ((int)fb->len != WIDTH * HEIGHT) {
+    Serial.printf("Unexpected frame size: %d (expected %d) — skipping\n",
+                  fb->len, WIDTH * HEIGHT);
+    esp_camera_fb_return(fb);
+    delay(100);
+    return;
+  }
+
+  // ── First frame: initialise reference buffer ──────────────
+  if (previousFrame == NULL) {
+    previousFrame = (uint8_t*) malloc(fb->len);
+    if (!previousFrame) {
+      Serial.println("malloc failed — restarting");
+      esp_camera_fb_return(fb);
+      delay(1000);
+      ESP.restart();
+      return;
+    }
+    memcpy(previousFrame, fb->buf, fb->len);
+    esp_camera_fb_return(fb);
+    Serial.println("Reference frame stored");
+    delay(100);
+    return;
+  }
+
+  // ── Motion detection ──────────────────────────────────────
+  int changedPixels = 0;
+  for (int i = 0; i < (int)fb->len; i++) {
+    if (abs((int)fb->buf[i] - (int)previousFrame[i]) > MOTION_THRESHOLD)
+      changedPixels++;
+  }
+
+  Serial.printf("Changed pixels: %d / %d\n", changedPixels, WIDTH * HEIGHT);
+
+  unsigned long now = millis();
+
+  // ── Upload if motion + cooldown elapsed ───────────────────
+  if (changedPixels > CHANGED_PIXELS_THRESHOLD && (now - lastUpload) > COOLDOWN_MS) {
+
+    Serial.println(">>> Motion detected — uploading image...");
+
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("WiFi lost — reconnecting");
+      WiFi.reconnect();
+      delay(2000);
+    } else {
+      HTTPClient http;
+      http.begin(serverName);
+      http.addHeader("Content-Type", "application/octet-stream");
+      http.setTimeout(10000);
+
+      int code = http.POST(fb->buf, fb->len);
+      Serial.printf("Server response: %d\n", code);
+      http.end();
+
+      if (code == 200) {
+        lastUpload = now;
+        Serial.println("<<< Upload successful");
+      } else {
+        Serial.println("<<< Upload failed");
+      }
+    }
+  }
+
+  // Update reference frame
+  memcpy(previousFrame, fb->buf, fb->len);
   esp_camera_fb_return(fb);
-  delay(2000);
+
+  delay(100);
 }
