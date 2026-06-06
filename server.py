@@ -88,8 +88,8 @@ db_pool = mysql.connector.pooling.MySQLConnectionPool(
     pool_name="parking_pool",
     pool_size=5,
     host="localhost",
-    user="arlpruser",
-    password="YourStrongPassword123!",
+    user="alpruser",
+    password="NewStrongPassword123!",
     database="alpr_db"
 )
 
