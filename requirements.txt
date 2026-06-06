@@ -5,3 +5,4 @@ mysql-connector-python
 requests
 numpy
 Pillow
+werkzeug

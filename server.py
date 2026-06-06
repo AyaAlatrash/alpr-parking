@@ -12,12 +12,16 @@ import mysql.connector.pooling
 import requests as req_lib
 import numpy as np
 import re
-import hashlib
+from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
 from PIL import Image
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {
+    "origins": "*",
+    "allow_headers": ["Content-Type", "Authorization"],
+    "methods": ["GET", "POST", "DELETE", "OPTIONS"]
+}})
 
 # ========================
 # JWT CONFIG
@@ -29,7 +33,7 @@ jwt = JWTManager(app)
 # ========================
 # APP CONFIG
 # ========================
-UPLOAD_FOLDER = r"C:\Users\HP i5\images"
+UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "/var/www/alpr-images")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 ESP32_STREAM_URL = "http://192.168.1.10:81/stream"
@@ -99,7 +103,7 @@ def get_db():
 # ========================
 
 def hash_password(password: str) -> str:
-    return hashlib.sha256(password.encode()).hexdigest()
+    return generate_password_hash(password)
 
 
 def normalize_plate(plate: str) -> str:
@@ -221,7 +225,7 @@ def login():
         cursor.close()
         conn.close()
 
-    if not user or user['password_hash'] != hash_password(password):
+    if not user or not check_password_hash(user['password_hash'], password):
         return jsonify({"error": "Invalid credentials"}), 401
 
     token = create_access_token(identity=username)
