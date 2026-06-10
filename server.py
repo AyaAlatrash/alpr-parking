@@ -36,7 +36,7 @@ jwt = JWTManager(app)
 UPLOAD_FOLDER = os.environ.get("UPLOAD_FOLDER", "/var/www/alpr-images")
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-ESP32_STREAM_URL = "http://192.168.1.10:81/stream"
+ESP32_STREAM_URL = "http://192.168.1.6:81/stream"  # ESP32 local IP
 
 # In-memory cooldown tracker  {plate: datetime_of_last_alert}
 alert_cooldown: dict = {}
@@ -49,7 +49,7 @@ DEFAULT_SETTINGS = {
     'telegram_bot_token': '',
     'telegram_chat_id':   '',
     'cooldown_minutes':   '30',
-    'esp32_stream_url':   'http://192.168.1.10:81/stream',
+    'esp32_stream_url':   'http://192.168.1.6:81/stream',  # ESP32 local IP
 }
 
 def get_setting(key: str) -> str:
@@ -185,10 +185,16 @@ def camera_feed():
     stream_url = get_setting('esp32_stream_url') or ESP32_STREAM_URL
     try:
         r = req_lib.get(stream_url, stream=True, timeout=(5, None))  # 5s connect, no read timeout
-        return Response(
-            r.iter_content(chunk_size=4096),
-            content_type=r.headers.get('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
+        content_type = r.headers.get('Content-Type', 'multipart/x-mixed-replace; boundary=frame')
+        response = Response(
+            r.iter_content(chunk_size=1024),
+            content_type=content_type
         )
+        # Prevent Cloudflare / nginx from buffering the MJPEG stream
+        response.headers['X-Accel-Buffering'] = 'no'
+        response.headers['Cache-Control'] = 'no-cache, no-store'
+        response.headers['Pragma'] = 'no-cache'
+        return response
     except Exception as e:
         return str(e), 502
 
